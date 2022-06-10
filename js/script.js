@@ -1,4 +1,24 @@
 /**
+ *  Setup
+ */
+
+const cell_size_2540 = 10;
+const cell_size_2400 = 10.7;
+const cell_size_4000 = 6.2;
+
+var raster_dot = [];
+var output_raster_dot = [];
+var slider;
+var sc;
+var dotsPerType = 3;
+var fontsize = 30;
+
+var sc_normal;  // Raster ohne Anpassung
+var sc_nano;    // Nano Raster
+var sc_sharp;   // Sharp Raster (W06)
+var sc_wsi;     // WSI Raster (ESKO MCWSI)
+
+/**
  * Berechnet den Rasterberg für verschiedene Rasterstukturen
  * Fogra
  * Circle (Rund)
@@ -276,26 +296,6 @@ class RasterDot {
     }
 }
 
-
-
-var raster_dot = [];
-var output_raster_dot = [];
-var slider;
-var sc;
-var dotsPerType = 3;
-var fontsize = 30;
-
-var sc_normal;  // Raster ohne Anpassung
-var sc_nano; // Nano Raster
-var sc_sharp; // Sharp Raster (W06)
-var sc_wsi; // WSI Raster (ESKO MCWSI)
-
-function preload() {
-    // Ensure the .ttf or .otf font stored in the assets directory
-    // is loaded before setup() and draw() are called
-    // font = loadFont('assets/Roboto-Regular.ttf');
-  }
-
 function setup() {
   
     // Create Screen
@@ -308,25 +308,25 @@ function setup() {
     sc_normal = new ScreenCreator(289);
     sc_normal.createScreen("Fogra");
     sc_normal.normalizedScreen();
-    sc_normal.createScreenPrintOutput(3)
+    sc_normal.createScreenPrintOutput(dotsPerType)
 
     // Nano 2400 DPI 
     sc_nano = new ScreenCreator(256);
     sc_nano.createScreen("Circle");
     sc_nano.normalizedScreen();
-    sc_nano.createScreenPrintOutput(3)
+    sc_nano.createScreenPrintOutput(dotsPerType)
 
     // Sharp 2540 DPI
     sc_sharp = new ScreenCreator(289);
     sc_sharp.createScreen("Circle");
     sc_sharp.normalizedScreen();
-    sc_sharp.createScreenPrintOutput(3)
+    sc_sharp.createScreenPrintOutput(dotsPerType)
 
     // MC WSI 4000 DPI
     sc_wsi = new ScreenCreator(729);
     sc_wsi.createScreen("Circle");
     sc_wsi.normalizedScreen();
-    sc_wsi.createScreenPrintOutput(3);
+    sc_wsi.createScreenPrintOutput(dotsPerType);
 
     createCanvas(2100,1000);
     // textFont(font);
@@ -346,11 +346,9 @@ function setup() {
     wsi_boost_slider = createSlider(100, 250, 200);
     wsi_boost_slider.position(1560,700);
     wsi_boost_slider.style('width', '200px');
-
-    
-    
-    
 }
+
+
 
 function draw() {
     background(255);
@@ -360,7 +358,7 @@ function draw() {
     var wsi_boost = wsi_boost_slider.value();
 
     var normal_gray_levels = sc_normal.grayLevels / 1000 * slider_value;
-    var screen_output_normal = sc_normal.getOutput(normal_gray_levels, 10, 10);
+    var screen_output_normal = sc_normal.getOutput(normal_gray_levels, cell_size_2540, cell_size_2540);
     offset_y = 0;
     for(y = 0; y < screen_output_normal.length; y++) {
         for(x = 0; x < screen_output_normal[0].length; x++) {
@@ -370,7 +368,7 @@ function draw() {
 
     offset_y = 520;
     var nano_gray_levels = sc_nano.grayLevels / 1000 * slider_value;
-    var screen_output_nano = sc_nano.getOutput(nano_gray_levels, 10.7, 10.7);
+    var screen_output_nano = sc_nano.getOutput(nano_gray_levels, cell_size_2400, cell_size_2400);
 
     for(y = 0; y < screen_output_nano.length; y++) {
         for(x = 0; x < screen_output_nano[0].length; x++) {
@@ -382,7 +380,7 @@ function draw() {
 
     offset_y = 1040;
     var sharp_gray_levels = sc_sharp.grayLevels / 1000 * slider_value;
-    var screen_output_sharp = sc_sharp.getOutputSharp(sharp_gray_levels, 10, 10);
+    var screen_output_sharp = sc_sharp.getOutputSharp(sharp_gray_levels, cell_size_2540, cell_size_2540);
 
     for(y = 0; y < screen_output_sharp.length; y++) {
         for(x = 0; x < screen_output_sharp[0].length; x++) {
@@ -394,7 +392,7 @@ function draw() {
 
     offset_y = 1560;
     var wsi_gray_levels = sc_wsi.grayLevels / 1000 * slider_value;
-    var screen_output_wsi = sc_wsi.getOutputWSI(wsi_gray_levels, 6.2, 6.2);
+    var screen_output_wsi = sc_wsi.getOutputWSI(wsi_gray_levels, cell_size_4000, cell_size_4000);
 
     for(y = 0; y < screen_output_wsi.length; y++) {
         for(x = 0; x < screen_output_wsi[0].length; x++) {
