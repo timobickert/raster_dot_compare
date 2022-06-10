@@ -407,10 +407,10 @@ function draw() {
     fill(0);
     stroke(0);
     textSize(fontsize);
-    text(slider_value / 10 + "%", 60, 690);
-    text(nano_boost + "%", 570, 690);
-    text(sharp_boost + "%", 1090, 690);
-    text(wsi_boost, 1610, 690);
+    text(slider_value / 10 + "%", 60, 670);
+    text(nano_boost + "%", 570, 670);
+    text(sharp_boost + "%", 1090, 670);
+    text(wsi_boost, 1610, 670);
 
     text("Regular", 80,55);
     text("Nano", 560,55);
