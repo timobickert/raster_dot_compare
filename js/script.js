@@ -196,22 +196,37 @@ class ScreenCreator {
     getOutputWSI(grayLevels, pix_w, pix_h) {
 
         var output = this.getOutput(grayLevels, pix_w, pix_h);
+        var shift = 0;
+        var row_is_empty = 0;
         for(var y = 0; y < output.length; y++) {
+            // shift Row by 2
+            if(y % 4 == 0) {
+                   shift = 1;     
+            }
+            var pixelCounter = 0;
+            if(shift) {
+                pixelCounter = 2;
+            }
+
             for(var x = 0; x < output[y].length;x++) {
                 // in jeder zweiten Zeile sind keine Pixel eingefärbt
                 // setze diese auf 0
+                
+
                 if(y % 2 > 0) {
                     output[x][y].filled = 0;
+                } else {
+                    
+                    if(pixelCounter % 4 != 0) {
+                        output[x][y].filled = 0;
+                    }
+                    row_is_empty = 0;
                 }
-                if(y % 2 == 0 && x % 4 > 0) {
-                    output[x][y].filled = 0;
-                }
-
+            
+                pixelCounter++;
             }
-
+            shift = 0;
         }
-
-
         return output
     }
 
@@ -233,7 +248,8 @@ class RasterDot {
         this.dotDiameter = Math.sqrt((this.width * this.width) + (this.height * this.height));
     }
 
-    draw(offset_x, offset_y, type) {
+    draw(offset_x, offset_y, type, boost) {
+        var boost = boost / 100;
         fill(255,255,255,0);
         noStroke();
         if(this.filled) {
@@ -245,13 +261,13 @@ class RasterDot {
                 ellipse(offset_x, offset_y, this.dotDiameter, this.dotDiameter);
                 break;
             case "nano":
-                ellipse(offset_x, offset_y, this.dotDiameter * 0.65, this.dotDiameter * 0.65);
+                ellipse(offset_x, offset_y, this.dotDiameter * 0.65 * boost, this.dotDiameter * 0.65 * boost);
                 break;
             case "sharp":
-                ellipse(offset_x, offset_y, this.dotDiameter * 0.9, this.dotDiameter * 0.9);
+                ellipse(offset_x, offset_y, this.dotDiameter * 0.9 * boost, this.dotDiameter * 0.9 * boost);
                 break;
             case "mcwsi":
-                ellipse(offset_x, offset_y, this.dotDiameter * 1, this.dotDiameter * 1);
+                ellipse(offset_x, offset_y, this.dotDiameter * 1.2 * boost, this.dotDiameter * 0.8 * boost);
                 break;
             default:
                 ellipse(offset_x, offset_y, this.dotDiameter, this.dotDiameter);
@@ -277,7 +293,7 @@ var sc_wsi; // WSI Raster (ESKO MCWSI)
 function preload() {
     // Ensure the .ttf or .otf font stored in the assets directory
     // is loaded before setup() and draw() are called
-    font = loadFont('assets/Roboto-Regular.ttf');
+    // font = loadFont('assets/Roboto-Regular.ttf');
   }
 
 function setup() {
@@ -290,7 +306,7 @@ function setup() {
 
     // Standardraster 2540 DPI
     sc_normal = new ScreenCreator(289);
-    sc_normal.createScreen("Circle");
+    sc_normal.createScreen("Fogra");
     sc_normal.normalizedScreen();
     sc_normal.createScreenPrintOutput(3)
 
@@ -313,24 +329,42 @@ function setup() {
     sc_wsi.createScreenPrintOutput(3);
 
     createCanvas(2100,1000);
-    textFont(font);
+    // textFont(font);
 
     slider = createSlider(0,1000, 1000);
     slider.position( 10, 700);
     slider.style('width', '200px');
+
+    nano_boost_slider = createSlider(80, 120, 100);
+    nano_boost_slider.position(520,700);
+    nano_boost_slider.style('width', '200px');
+
+    sharp_boost_slider = createSlider(80, 120, 100);
+    sharp_boost_slider.position(1040,700);
+    sharp_boost_slider.style('width', '200px');
+
+    wsi_boost_slider = createSlider(100, 250, 200);
+    wsi_boost_slider.position(1560,700);
+    wsi_boost_slider.style('width', '200px');
+
+    
+    
     
 }
 
 function draw() {
     background(255);
     var slider_value = slider.value();
+    var nano_boost = nano_boost_slider.value();
+    var sharp_boost = sharp_boost_slider.value();
+    var wsi_boost = wsi_boost_slider.value();
 
     var normal_gray_levels = sc_normal.grayLevels / 1000 * slider_value;
     var screen_output_normal = sc_normal.getOutput(normal_gray_levels, 10, 10);
     offset_y = 0;
     for(y = 0; y < screen_output_normal.length; y++) {
         for(x = 0; x < screen_output_normal[0].length; x++) {
-            screen_output_normal[x][y].draw(x * screen_output_normal[x][y].width + offset_y, y * screen_output_normal[x][y].height + 100, "std");
+            screen_output_normal[x][y].draw(x * screen_output_normal[x][y].width + offset_y, y * screen_output_normal[x][y].height + 100, "std", 100);
         }
     }
 
@@ -342,7 +376,7 @@ function draw() {
         for(x = 0; x < screen_output_nano[0].length; x++) {
             screen_output_nano[x][y].draw((x * screen_output_nano[x][y].width + offset_y), 
                                           y * screen_output_nano[x][y].height + 100, 
-                                          "nano");
+                                          "nano", nano_boost);
         }
     }
 
@@ -354,7 +388,7 @@ function draw() {
         for(x = 0; x < screen_output_sharp[0].length; x++) {
             screen_output_sharp[x][y].draw((x * screen_output_sharp[x][y].width + offset_y), 
                                           y * screen_output_sharp[x][y].height + 100, 
-                                          "sharp");
+                                          "sharp", sharp_boost);
         }
     }
 
@@ -366,17 +400,21 @@ function draw() {
         for(x = 0; x < screen_output_wsi[0].length; x++) {
             screen_output_wsi[x][y].draw((x * screen_output_wsi[x][y].width + offset_y), 
                                           y * screen_output_wsi[x][y].height + 100, 
-                                          "mcwsi");
+                                          "mcwsi", wsi_boost);
         }
     }
 
     fill(0);
     stroke(0);
     textSize(fontsize);
-    text(slider_value / 10 + "%", 240, 700);
-    // text( wsi_gray_levels , 250, 25);
+    text(slider_value / 10 + "%", 60, 690);
+    text(nano_boost + "%", 570, 690);
+    text(sharp_boost + "%", 1090, 690);
+    text(wsi_boost, 1610, 690);
+
     text("Regular", 80,55);
     text("Nano", 560,55);
     text("Sharp W06", 1040,55);
     text("Esko MCWSI", 1560,55);
+ 
 }
